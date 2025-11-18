@@ -240,8 +240,13 @@ class UptimeKumaServer {
      */
     async getMonitorJSONList(userID, monitorID = null) {
 
-        let query = " user_id = ? ";
-        let queryParams = [ userID ];
+        let query = " ";
+        let queryParams = [];
+
+        if (userID !== 1) {
+            query += "AND user_id = ? ";
+            queryParams.push(userID);
+        }
 
         if (monitorID) {
             query += "AND id = ? ";
