@@ -245,8 +245,10 @@ class UptimeKumaServer {
         let queryParams = [];
 
         if (userID !== 1) {
-            query += "AND user_id = ? ";
+            query += "user_id = ? ";
             queryParams.push(userID);
+        } else {
+            query += "1 = 1 ";
         }
 
         if (monitorID) {

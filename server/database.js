@@ -15,6 +15,62 @@ const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysq
 const SqlString = require("sqlstring");
 
 /**
+ * SqlInterceptAdapter 类继承自 R.adapter.constructor
+ * 用于拦截和重写SQL查询，提供SQL语句的日志记录和重写功能
+ */
+class SqlInterceptAdapter extends R.adapter.constructor {
+    exec(sql, bindings) {
+        if (isHandWrittenSql(sql)) {
+            console.log("Before Rewrite:", sql);
+            sql = rewriteSql(sql);
+            console.log("After Rewrite:", sql);
+        }
+        return super.exec(sql, bindings);
+    }
+
+    getAll(sql, bindings) {
+        if (isHandWrittenSql(sql)) {
+            console.log("Before Rewrite:", sql);
+            sql = rewriteSql(sql);
+            console.log("After Rewrite:", sql);
+        }
+        return super.getAll(sql, bindings);
+    }
+
+    getRow(sql, bindings) {
+        if (isHandWrittenSql(sql)) {
+            console.log("Before Rewrite:", sql);
+            sql = rewriteSql(sql);
+            console.log("After Rewrite:", sql);
+        }
+        return super.getRow(sql, bindings);
+    }
+
+    getCol(sql, bindings) {
+        if (isHandWrittenSql(sql)) {
+            console.log("Before Rewrite:", sql);
+            sql = rewriteSql(sql);
+            console.log("After Rewrite:", sql);
+        }
+        return super.getCol(sql, bindings);
+    }
+}
+
+// ----------- 判断是否为手写 SQL -----------
+function isHandWrittenSql(sql) {
+    // 最简单版本：RedBean 自动生成 SQL 都包含反引号 `
+    return !sql.includes("`");
+}
+
+// ----------- SQL 改写函数（示例）-----------
+function rewriteSql(sql) {
+
+    if (sql.includes("user_id = 1")) {
+        return sql.replace("user_id = 1", "1 = 1");
+    }
+    return sql;
+}
+/**
  * Database & App Data Folder
  */
 class Database {
@@ -327,6 +383,8 @@ class Database {
         const knexInstance = knex(config);
 
         R.setup(knexInstance);
+
+        R.adapter = new SqlInterceptAdapter(R.adapter.db);
 
         if (process.env.SQL_LOG === "1") {
             R.debug(true);
